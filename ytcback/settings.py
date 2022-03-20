@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #custom app
     'vids',
-    
+    'rest_framework',
+
 ]
 
 MIDDLEWARE = [
