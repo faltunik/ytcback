@@ -16,12 +16,12 @@ class Video(models.Model):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        if self.image:
-            img = Image.open(self.image)
+        if self.thumbnail:
+            img = Image.open(self.thumbnail)
             if img.height > 300 or img.width > 500:
                 output_size = (300, 600)
                 img.thumbnail(output_size)
-                img.save(self.image.path)
+                img.save(self.thumbnail.path)
 
 class Comment(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE)
