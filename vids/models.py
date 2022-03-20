@@ -10,6 +10,10 @@ class Video(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     video_file = models.FileField(upload_to= 'videos/%Y/%m/%d', null=True, verbose_name="ytvid") # upload_to= 'videos/%Y/%m/%d' means, create a folder named videos inside BASE_DIR 
     thumbnail = models.ImageField(upload_to='thumbnails/', null=True)
+    like =  models.ManyToManyField(User, related_name='vidlike', blank=True)
+    views = models.IntegerField(blank=True, default=0)
+    # diff between blank and null
+    # use of verbose and realted name
 
     def __str__(self):
         return self.title + ": " + str(self.date_uploaded)
@@ -28,9 +32,19 @@ class Comment(models.Model):
     comment = models.CharField(max_length=200)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     date_posted = models.DateTimeField(auto_now_add=True)
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='parentchild')
+    like =  models.ManyToManyField(User, related_name='comlike', blank=True)
 
     def __str__(self):
         return self.comment + ": " + str(self.date_posted)
+
+    @property
+    def is_parent(self):
+        return True if self.parent is None else False
+
+    @property
+    def children(self):
+        return Comment.objects.filter(parent=self)
 
 
 
