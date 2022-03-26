@@ -37,7 +37,8 @@ class VideoView(APIView):
             # thumbnail manipulation
             # file renaming
             # <------------>
-            serializer.save(author= request.user)
+            serializer.save()
+            # author= request.user
             # sending the response
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -55,6 +56,10 @@ class VideoDetail(APIView):
         #video = self.get_object(pk=pk)
         video = get_object_or_404(Video, id=pk)
         serializer = VideoSerializer(video)
+        print('Current Video Views is ', video.views)
+        video.views = F('views') + 1
+        video.save()
+        print('Video views changes to ', video.views)
         return Response(serializer.data)
 
     def delete(self, pk, request):
@@ -89,6 +94,9 @@ def video_like(request):
     # video = Video.object.filter(pk=pk)
     video = get_object_or_404(Video, id = request.GET.get('getid', 1) )
     res = ""
+    print(video.like)
+    print(type(video.like))
+
     if request.user in video.like:
         video.like.remove(request.user)
         res = "unliked"
@@ -99,20 +107,21 @@ def video_like(request):
 
 
 class CommentView(APIView):
-    def get(self):
-        comment = Comment.objects.all()
+    def get(self, request):
+        video = get_object_or_404(Video, id=request.GET.get('id', 1) )
+        comment = Comment.objects.filter(video = video, parent=None)
         serializer = CommentSerializer(comment, many=True)
         return Response(serializer.data)
 
     def post(self, request):
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(author= request.user)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CommentDetail(APIView):
-    def get(self, pk):
+    def get(self, request,  pk):
         comment = get_object_or_404(Comment, id=pk)
         serializer = CommentSerializer(comment)
         return Response(serializer.data)
@@ -142,6 +151,7 @@ class CommentDetail(APIView):
 
 @api_view(['GET'])
 def comment_like(request, pk):
+    print(request.data)
     # how pk is sent to this function
     comment = get_object_or_404(Comment, id = pk )
     res = ""
@@ -152,4 +162,25 @@ def comment_like(request, pk):
         comment.like.add(request.user)
         res = "liked"
     return Response({'message': f"comment is{res}"}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def video_search(request):
+    print(request.data)
+    query = request.GET.get('query', None)
+    if query is not None:
+        videos = Video.objects.filter(title__icontains=query)  # name__icontains helps use ot filter name that contains
+        serializer = VideoSerializer(videos, many=True)
+        return Response(serializer.data)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def reply_list(request):
+    print(request.data)
+    comment = get_object_or_404(Comment, id = request.GET.get('getid', 1) )
+    reply = comment.children() # collecting it's children
+    serializer = CommentSerializer(reply, many=True)
+    return Response(serializer.data)
+
+    
 
