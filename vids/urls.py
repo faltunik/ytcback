@@ -10,4 +10,5 @@ urlpatterns = [
     path('videos/<int:pk>', views.VideoDetail.as_view(), name='videodetail'),
     path('comment', views.CommentView.as_view(), name='comment'),
     path('comment/<int:pk>', views.CommentDetail.as_view(), name='commentdetail'),
+    path('vidsearch', views.video_search, name='vidsearch'),
 ]

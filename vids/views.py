@@ -91,17 +91,21 @@ class VideoDetail(APIView):
 
 @api_view(['GET'])
 def video_like(request):
+    print('<--------------------------------------------->')
+    print(request.data)
+    print(request.data['user'])
+    
     # video = Video.object.filter(pk=pk)
     video = get_object_or_404(Video, id = request.GET.get('getid', 1) )
+    print(video.like.all())
+    print('<--------------------------------------------->')
     res = ""
-    print(video.like)
-    print(type(video.like))
 
-    if request.user in video.like:
-        video.like.remove(request.user)
+    if request.data['user'][0] in video.like.all():
+        video.like.remove(request.data['user'])
         res = "unliked"
     else:
-        video.like.add(request.user)
+        video.like.add(request.data['user'])
         res = "liked"
     return Response({'message': f"post is{res}"}, status=status.HTTP_200_OK)
 
